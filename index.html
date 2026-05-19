@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3×3×3 CUBE</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07090d;
+  --panel:#0c0f15;
+  --border:#1a2030;
+  --text:#b8ccd8;
+  --muted:#3d5468;
+  --accent:#f97316;
+  --accent2:#fbbf24;
+  --green:#22c55e;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  display:flex;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+}
+#viewport{
+  flex:1;
+  position:relative;
+  min-width:0;
+  min-height:0;
+}
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  cursor:grab;
+  touch-action:none;
+}
+canvas.grabbing{cursor:grabbing}
+
+/* ── Sidebar (desktop: right column) ── */
+#sidebar{
+  width:218px;
+  background:var(--panel);
+  border-left:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  padding:22px 14px;
+  gap:22px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  flex-shrink:0;
+}
+/* Wrapper so logo+stats stack vertically on desktop, horizontally on mobile */
+#sidebar-header{
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+.logo{
+  font-size:15px;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:.14em;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+}
+.logo-sub{color:var(--muted);font-weight:300;font-size:11px;letter-spacing:.1em}
+
+/* Stats */
+.stats{display:flex;flex-direction:column}
+.stat{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:7px 0;
+  border-bottom:1px solid var(--border);
+}
+.stat-label{font-size:9px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase}
+.stat-value{font-size:24px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+#timer.running{color:var(--accent)}
+
+/* Win */
+#win-msg{
+  display:none;
+  padding:10px 0;
+  text-align:center;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.14em;
+  color:var(--green);
+  border:1px solid var(--green);
+  background:rgba(34,197,94,.06);
+  animation:pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+.sec-label{
+  font-size:9px;
+  color:var(--muted);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  margin-bottom:9px;
+}
+
+/* Move grid */
+.move-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:3px;
+}
+.btn{
+  background:#111720;
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:700;
+  padding:8px 0;
+  cursor:pointer;
+  transition:background .1s,color .1s,border-color .1s,transform .08s;
+  letter-spacing:.04em;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#000}
+.btn:active{transform:scale(.93);background:var(--accent);border-color:var(--accent);color:#000}
+
+/* Action buttons */
+.action-wrap{display:flex;flex-direction:column;gap:6px}
+.abtn{
+  width:100%;
+  padding:11px;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.12em;
+  cursor:pointer;
+  transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.abtn:hover{border-color:var(--accent);color:var(--accent)}
+.abtn.primary{background:var(--accent);border-color:var(--accent);color:#000}
+.abtn.primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.abtn:active{transform:scale(.97)}
+
+/* Hint */
+.hint{font-size:9px;color:var(--muted);line-height:2.1}
+.hint b{color:var(--text);font-weight:400}
+
+/* Face-label legend */
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.litem{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)}
+.ldot{width:8px;height:8px;border-radius:1px;flex-shrink:0}
+
+.spacer{flex:1}
+.desktop-only{} /* marker class, targeted below */
+
+/* ── Mobile portrait: sidebar becomes bottom panel ── */
+@media (max-width:640px){
+  body{flex-direction:column}
+
+  #viewport{flex:1;min-height:0}
+
+  #sidebar{
+    width:100%;
+    border-left:none;
+    border-top:1px solid var(--border);
+    padding:10px 12px 12px;
+    gap:8px;
+    /* let content determine height; canvas gets the rest */
+  }
+
+  /* Logo + stats in one horizontal row */
+  #sidebar-header{
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .logo{font-size:12px;letter-spacing:.1em}
+  .logo-sub{display:none}
+
+  .stats{flex-direction:row;gap:14px}
+  .stat{
+    flex-direction:column;
+    align-items:flex-end;
+    padding:0;
+    border-bottom:none;
+    gap:0;
+  }
+  .stat-label{font-size:8px;letter-spacing:.12em}
+  .stat-value{font-size:18px}
+
+  /* Win msg compact */
+  #win-msg{padding:6px 0;font-size:10px}
+
+  /* Larger touch targets */
+  .btn{padding:13px 0;font-size:14px;min-height:46px}
+  .move-grid{gap:4px}
+
+  /* Action buttons side by side */
+  .action-wrap{flex-direction:row}
+  .abtn{padding:13px 8px;font-size:11px;min-height:46px}
+
+  /* Hide desktop-only extras */
+  .desktop-only,.spacer{display:none}
+  .sec-label{display:none}
+}
+
+/* ── Mobile landscape: slim sidebar on right ── */
+@media (max-height:500px) and (orientation:landscape){
+  body{flex-direction:row}
+  #sidebar{
+    width:180px;
+    padding:12px 10px;
+    gap:10px;
+  }
+  #sidebar-header{gap:10px}
+  .stat-value{font-size:18px}
+  .btn{padding:9px 0;font-size:12px}
+  .abtn{padding:9px}
+  .desktop-only{display:none}
+  .spacer{display:none}
+  .sec-label{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="viewport"><canvas id="c"></canvas></div>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <div class="logo">3×3×3 <span class="logo-sub">RUBIK'S CUBE</span></div>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-label">TIME</span>
+        <span class="stat-value" id="timer">00:00</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">MOVES</span>
+        <span class="stat-value" id="moves">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="win-msg">&#10003; SOLVED!</div>
+
+  <div>
+    <div class="sec-label">Moves</div>
+    <div class="move-grid">
+      <button class="btn" data-m="U">U</button>
+      <button class="btn" data-m="U'">U'</button>
+      <button class="btn" data-m="D">D</button>
+      <button class="btn" data-m="D'">D'</button>
+      <button class="btn" data-m="L">L</button>
+      <button class="btn" data-m="L'">L'</button>
+      <button class="btn" data-m="R">R</button>
+      <button class="btn" data-m="R'">R'</button>
+      <button class="btn" data-m="F">F</button>
+      <button class="btn" data-m="F'">F'</button>
+      <button class="btn" data-m="B">B</button>
+      <button class="btn" data-m="B'">B'</button>
+    </div>
+  </div>
+
+  <div class="action-wrap">
+    <button class="abtn primary" id="btn-scramble">SCRAMBLE</button>
+    <button class="abtn" id="btn-reset">RESET</button>
+  </div>
+
+  <div class="desktop-only">
+    <div class="sec-label">Face colors</div>
+    <div class="legend">
+      <div class="litem"><div class="ldot" style="background:#fff"></div>U</div>
+      <div class="litem"><div class="ldot" style="background:#ffd700"></div>D</div>
+      <div class="litem"><div class="ldot" style="background:#f97316"></div>L</div>
+      <div class="litem"><div class="ldot" style="background:#dc2626"></div>R</div>
+      <div class="litem"><div class="ldot" style="background:#22aa44"></div>F</div>
+      <div class="litem"><div class="ldot" style="background:#2255cc"></div>B</div>
+    </div>
+  </div>
+
+  <div class="desktop-only">
+    <div class="sec-label">Keyboard</div>
+    <div class="hint">
+      <b>U D L R F B</b> — clockwise<br>
+      <b>Shift</b> + key — counter-CW<br>
+      <b>Drag</b> — rotate view
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+// ── Scene setup ────────────────────────────────────────────────────────
+const canvas  = document.getElementById('c');
+const vp      = document.getElementById('viewport');
+const scene   = new THREE.Scene();
+scene.background = new THREE.Color(0x07090d);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+function resize() {
+  const w = vp.clientWidth, h = vp.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Lighting
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const sun = new THREE.DirectionalLight(0xffffff, 0.95);
+sun.position.set(5, 8, 6);
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x7fb0ff, 0.35);
+fill.position.set(-4, -3, -5);
+scene.add(fill);
+
+// Subtle grid floor
+const grid = new THREE.GridHelper(12, 12, 0x1a2030, 0x1a2030);
+grid.position.y = -2.5;
+scene.add(grid);
+
+// ── Orbit (mouse + touch) ──────────────────────────────────────────────
+let theta = 0.65, phi = 1.08, CAM_R = 6.8;
+let orbiting = false, lastMX = 0, lastMY = 0;
+
+function updateCam() {
+  camera.position.set(
+    CAM_R * Math.sin(phi) * Math.sin(theta),
+    CAM_R * Math.cos(phi),
+    CAM_R * Math.sin(phi) * Math.cos(theta)
+  );
+  camera.lookAt(0, 0, 0);
+}
+updateCam();
+
+canvas.addEventListener('mousedown', e => {
+  orbiting = true; lastMX = e.clientX; lastMY = e.clientY;
+  canvas.classList.add('grabbing');
+});
+window.addEventListener('mousemove', e => {
+  if (!orbiting) return;
+  theta -= (e.clientX - lastMX) * 0.007;
+  phi    = Math.max(0.15, Math.min(Math.PI - 0.15, phi - (e.clientY - lastMY) * 0.007));
+  lastMX = e.clientX; lastMY = e.clientY;
+  updateCam();
+});
+window.addEventListener('mouseup', () => { orbiting = false; canvas.classList.remove('grabbing'); });
+
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length !== 1) return;
+  orbiting = true;
+  lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
+}, { passive: true });
+canvas.addEventListener('touchmove', e => {
+  if (!orbiting || e.touches.length !== 1) return;
+  e.preventDefault();
+  theta -= (e.touches[0].clientX - lastMX) * 0.007;
+  phi    = Math.max(0.15, Math.min(Math.PI - 0.15, phi - (e.touches[0].clientY - lastMY) * 0.007));
+  lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
+  updateCam();
+}, { passive: false });
+canvas.addEventListener('touchend', () => { orbiting = false; }, { passive: true });
+
+// ── Cube colors ────────────────────────────────────────────────────────
+// BoxGeometry material index order: +x, -x, +y, -y, +z, -z
+const COL = {
+  R: 0xdc2626, // red    (+x)
+  L: 0xf97316, // orange (-x)
+  U: 0xffffff, // white  (+y)
+  D: 0xffd700, // yellow (-y)
+  F: 0x22aa44, // green  (+z)
+  B: 0x2255cc, // blue   (-z)
+  I: 0x080c12, // inner (dark)
+};
+
+// Face normals aligned with BoxGeometry material slots
+const FACE_NORMALS = [
+  new THREE.Vector3( 1, 0, 0),
+  new THREE.Vector3(-1, 0, 0),
+  new THREE.Vector3( 0, 1, 0),
+  new THREE.Vector3( 0,-1, 0),
+  new THREE.Vector3( 0, 0, 1),
+  new THREE.Vector3( 0, 0,-1),
+];
+
+// ── Cubelets ───────────────────────────────────────────────────────────
+const cubelets = [];
+const SHARED_GEO = new THREE.BoxGeometry(0.93, 0.93, 0.93);
+
+function makeCubelet(x, y, z) {
+  const mats = [
+    new THREE.MeshLambertMaterial({ color: x === 1  ? COL.R : COL.I }),
+    new THREE.MeshLambertMaterial({ color: x === -1 ? COL.L : COL.I }),
+    new THREE.MeshLambertMaterial({ color: y === 1  ? COL.U : COL.I }),
+    new THREE.MeshLambertMaterial({ color: y === -1 ? COL.D : COL.I }),
+    new THREE.MeshLambertMaterial({ color: z === 1  ? COL.F : COL.I }),
+    new THREE.MeshLambertMaterial({ color: z === -1 ? COL.B : COL.I }),
+  ];
+  const m = new THREE.Mesh(SHARED_GEO, mats);
+  m.position.set(x, y, z);
+  scene.add(m);
+  cubelets.push(m);
+}
+
+function buildCube() {
+  cubelets.forEach(c => scene.remove(c));
+  cubelets.length = 0;
+  for (let x = -1; x <= 1; x++)
+    for (let y = -1; y <= 1; y++)
+      for (let z = -1; z <= 1; z++)
+        if (x || y || z) makeCubelet(x, y, z); // skip invisible center
+}
+
+buildCube();
+
+// ── Move definitions ───────────────────────────────────────────────────
+// s: sign of rotation (right-hand rule around axis)
+// U CW from above  → rotate y=+1 layer by -90° around Y
+// D CW from below  → rotate y=-1 layer by +90° around Y
+// R CW from right  → rotate x=+1 layer by -90° around X
+// L CW from left   → rotate x=-1 layer by +90° around X
+// F CW from front  → rotate z=+1 layer by -90° around Z
+// B CW from back   → rotate z=-1 layer by +90° around Z
+const MOVES = {
+  'U' : { a:'y', l: 1, s:-1 },
+  "U'": { a:'y', l: 1, s: 1 },
+  'D' : { a:'y', l:-1, s: 1 },
+  "D'": { a:'y', l:-1, s:-1 },
+  'R' : { a:'x', l: 1, s:-1 },
+  "R'": { a:'x', l: 1, s: 1 },
+  'L' : { a:'x', l:-1, s: 1 },
+  "L'": { a:'x', l:-1, s:-1 },
+  'F' : { a:'z', l: 1, s:-1 },
+  "F'": { a:'z', l: 1, s: 1 },
+  'B' : { a:'z', l:-1, s: 1 },
+  "B'": { a:'z', l:-1, s:-1 },
+};
+const MOVE_KEYS = Object.keys(MOVES);
+
+// ── Move execution ─────────────────────────────────────────────────────
+const queue      = [];
+let   animating  = false;
+let   scrambling = false;
+
+function execMove(name, instant) {
+  const { a, l, s } = MOVES[name];
+  const targetAngle  = s * Math.PI / 2;
+  const layer        = cubelets.filter(c => Math.round(c.position[a]) === l);
+
+  const pivot = new THREE.Group();
+  scene.add(pivot);
+  layer.forEach(c => pivot.attach(c));
+
+  function finish() {
+    pivot.rotation[a] = targetAngle;
+    pivot.updateMatrixWorld();
+    layer.forEach(c => {
+      scene.attach(c);
+      c.position.x = Math.round(c.position.x);
+      c.position.y = Math.round(c.position.y);
+      c.position.z = Math.round(c.position.z);
+    });
+    scene.remove(pivot);
+    if (!instant) { animating = false; processQueue(); checkWin(); }
+  }
+
+  if (instant) { finish(); return; }
+
+  const DUR = 155; // ms per move
+  const t0  = performance.now();
+  (function frame(now) {
+    const p = Math.min((now - t0) / DUR, 1);
+    const e = p < 0.5 ? 2*p*p : -1 + (4 - 2*p)*p; // ease-in-out
+    pivot.rotation[a] = targetAngle * e;
+    p < 1 ? requestAnimationFrame(frame) : finish();
+  })(t0);
+}
+
+function processQueue() {
+  if (animating || queue.length === 0) return;
+  const name = queue.shift();
+  animating  = true;
+  if (!scrambling) {
+    if (!timerStarted) startTimer();
+    moveCount++;
+    document.getElementById('moves').textContent = moveCount;
+  }
+  execMove(name, false);
+}
+
+function queueMove(name) {
+  if (queue.length >= 10) return; // cap depth to prevent runaway
+  queue.push(name);
+  if (!animating) processQueue();
+}
+
+// ── Win detection ──────────────────────────────────────────────────────
+const CHECK_FACES = [
+  { d: new THREE.Vector3( 1, 0, 0), a:'x', v: 1 },
+  { d: new THREE.Vector3(-1, 0, 0), a:'x', v:-1 },
+  { d: new THREE.Vector3( 0, 1, 0), a:'y', v: 1 },
+  { d: new THREE.Vector3( 0,-1, 0), a:'y', v:-1 },
+  { d: new THREE.Vector3( 0, 0, 1), a:'z', v: 1 },
+  { d: new THREE.Vector3( 0, 0,-1), a:'z', v:-1 },
+];
+
+const _iq = new THREE.Quaternion();
+const _ld = new THREE.Vector3();
+
+function sticker(cubelet, worldDir) {
+  // Find which original material face is now pointing toward worldDir
+  _iq.copy(cubelet.quaternion).invert();
+  _ld.copy(worldDir).applyQuaternion(_iq);
+  let best = -Infinity, idx = 0;
+  for (let i = 0; i < 6; i++) {
+    const dot = _ld.dot(FACE_NORMALS[i]);
+    if (dot > best) { best = dot; idx = i; }
+  }
+  return cubelet.material[idx].color.getHex();
+}
+
+let gameOver = false;
+
+function checkWin() {
+  if (gameOver) return;
+  for (const { d, a, v } of CHECK_FACES) {
+    const layer = cubelets.filter(c => Math.round(c.position[a]) === v);
+    if (layer.length !== 9) return;
+    const cols = layer.map(c => sticker(c, d));
+    if (!cols.every(x => x === cols[0])) return;
+  }
+  // All 6 faces uniform → solved!
+  gameOver = true;
+  stopTimer();
+  document.getElementById('win-msg').style.display = 'block';
+  document.getElementById('timer').classList.remove('running');
+}
+
+// ── Timer ──────────────────────────────────────────────────────────────
+let timerStarted = false, timerStart = 0, timerID = null;
+let moveCount    = 0;
+
+function startTimer() {
+  timerStarted = true;
+  timerStart   = Date.now();
+  document.getElementById('timer').classList.add('running');
+  timerID = setInterval(() => {
+    const s  = Math.floor((Date.now() - timerStart) / 1000);
+    const mm = String(Math.floor(s / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${mm}:${ss}`;
+  }, 200);
+}
+
+function stopTimer() {
+  clearInterval(timerID);
+  timerID = null;
+}
+
+// ── Scramble ───────────────────────────────────────────────────────────
+function inverse(m) { return m.endsWith("'") ? m.slice(0, -1) : m + "'"; }
+
+function scramble() {
+  reset();
+  scrambling = true;
+  let last = '';
+  for (let i = 0; i < 22; i++) {
+    let m;
+    do { m = MOVE_KEYS[Math.random() * 12 | 0]; } while (m === inverse(last));
+    last = m;
+    execMove(m, true);
+  }
+  scrambling = false;
+  gameOver   = false;
+  document.getElementById('win-msg').style.display = 'none';
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────
+function reset() {
+  queue.length = 0;
+  animating = scrambling = timerStarted = gameOver = false;
+  moveCount = 0;
+  stopTimer();
+  document.getElementById('moves').textContent  = '0';
+  document.getElementById('timer').textContent  = '00:00';
+  document.getElementById('timer').classList.remove('running');
+  document.getElementById('win-msg').style.display = 'none';
+  buildCube();
+}
+
+// ── Button & keyboard input ────────────────────────────────────────────
+document.querySelectorAll('[data-m]').forEach(b => {
+  b.addEventListener('click', () => queueMove(b.dataset.m));
+});
+document.getElementById('btn-scramble').addEventListener('click', scramble);
+document.getElementById('btn-reset').addEventListener('click', reset);
+
+document.addEventListener('keydown', e => {
+  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target !== document.body) return;
+  const key = e.key.toUpperCase();
+  if ('UDLRFB'.includes(key) && key.length === 1) {
+    e.preventDefault();
+    queueMove(e.shiftKey ? key + "'" : key);
+  }
+});
+
+// ── Render loop ────────────────────────────────────────────────────────
+(function loop() {
+  requestAnimationFrame(loop);
+  renderer.render(scene, camera);
+})();
+</script>
+</body>
+</html>
