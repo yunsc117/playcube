@@ -237,7 +237,7 @@ canvas.can-move{cursor:pointer}
 
 <div id="viewport">
   <canvas id="c"></canvas>
-  <div id="hint-overlay">SWIPE FACE TO MOVE &nbsp;·&nbsp; DRAG SPACE TO ROTATE</div>
+  <div id="hint-overlay">SWIPE FACE TO MOVE &nbsp;·&nbsp; 2-FINGER DRAG TO ROTATE</div>
 </div>
 
 <div id="sidebar">
@@ -296,6 +296,7 @@ canvas.can-move{cursor:pointer}
     <div class="sec-label">Controls</div>
     <div class="hint">
       <b>Swipe face</b> — rotate layer<br>
+      <b>2-finger drag</b> — rotate view<br>
       <b>Drag space</b> — rotate view<br>
       <b>U D L R F B</b> — clockwise<br>
       <b>Shift</b> + key — counter-CW
@@ -625,32 +626,60 @@ function screenDragToMove(dx, dy, cubelet, faceNormal) {
   return null;
 }
 
-// Unified pointer events (mouse + touch)
-const DRAG_MIN = 10; // px
-let pState = null;   // null | {type:'orbit', lastX, lastY} | {type:'drag', startX, startY, cubelet, faceNormal}
+// ── Pointer events (mouse + unified touch, multi-touch orbit) ──────────
+const DRAG_MIN = 10; // px before committing to a move
+
+// Track all active pointers for multi-touch detection
+const ptrs = new Map(); // pointerId -> {x, y}
+let pState = null;      // current gesture state
+let multiOrbitLast = null; // centroid during 2-finger orbit
+
+function ptCentroid() {
+  let x = 0, y = 0;
+  ptrs.forEach(p => { x += p.x; y += p.y; });
+  return { x: x / ptrs.size, y: y / ptrs.size };
+}
 
 canvas.addEventListener('pointerdown', e => {
   if (e.button !== 0 && e.pointerType === 'mouse') return;
-  e.preventDefault();
   canvas.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
+  if (ptrs.size >= 2) {
+    // Second (or more) finger: cancel any pending drag, switch to 2-finger orbit
+    pState = null;
+    multiOrbitLast = ptCentroid();
+    return;
+  }
+
+  // First pointer
+  multiOrbitLast = null;
   const hit = hitTest(e.clientX, e.clientY);
   if (hit && !animating) {
-    pState = { type: 'drag', startX: e.clientX, startY: e.clientY, ...hit };
+    pState = { type: 'drag', startX: e.clientX, startY: e.clientY, multiTouched: false, ...hit };
   } else {
     pState = { type: 'orbit', lastX: e.clientX, lastY: e.clientY };
     canvas.classList.add('grabbing');
-    canvas.classList.remove('can-move');
   }
 });
 
 canvas.addEventListener('pointermove', e => {
+  if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  // 2-finger orbit: use centroid movement
+  if (ptrs.size >= 2 && multiOrbitLast) {
+    const c = ptCentroid();
+    theta -= (c.x - multiOrbitLast.x) * 0.007;
+    phi    = Math.max(0.15, Math.min(Math.PI - 0.15, phi - (c.y - multiOrbitLast.y) * 0.007));
+    multiOrbitLast = c;
+    updateCam();
+    return;
+  }
+
   if (!pState) {
-    // Hover: change cursor if over cube
+    // Desktop hover: update cursor
     if (e.pointerType === 'mouse') {
-      const hit = hitTest(e.clientX, e.clientY);
-      canvas.classList.toggle('can-move', !!hit);
-      canvas.classList.toggle('grab', !hit);
+      canvas.classList.toggle('can-move', !!hitTest(e.clientX, e.clientY));
     }
     return;
   }
@@ -664,23 +693,33 @@ canvas.addEventListener('pointermove', e => {
 });
 
 canvas.addEventListener('pointerup', e => {
-  if (!pState) return;
-  if (pState.type === 'drag') {
-    const dx   = e.clientX - pState.startX;
-    const dy   = e.clientY - pState.startY;
-    const dist = Math.hypot(dx, dy);
-    if (dist >= DRAG_MIN && !animating) {
-      const move = screenDragToMove(dx, dy, pState.cubelet, pState.faceNormal);
-      if (move) queueMove(move);
+  const wasDrag = pState?.type === 'drag' && ptrs.size === 1 && !pState.multiTouched;
+
+  ptrs.delete(e.pointerId);
+
+  if (ptrs.size < 2) multiOrbitLast = null;
+
+  if (ptrs.size === 0) {
+    if (wasDrag) {
+      const dx = e.clientX - pState.startX;
+      const dy = e.clientY - pState.startY;
+      if (Math.hypot(dx, dy) >= DRAG_MIN && !animating) {
+        const move = screenDragToMove(dx, dy, pState.cubelet, pState.faceNormal);
+        if (move) queueMove(move);
+      }
     }
+    pState = null;
+    canvas.classList.remove('grabbing');
   }
-  pState = null;
-  canvas.classList.remove('grabbing');
 });
 
-canvas.addEventListener('pointercancel', () => {
-  pState = null;
-  canvas.classList.remove('grabbing');
+canvas.addEventListener('pointercancel', e => {
+  ptrs.delete(e.pointerId);
+  if (ptrs.size === 0) {
+    pState = null;
+    multiOrbitLast = null;
+    canvas.classList.remove('grabbing');
+  }
 });
 
 // ── Win detection ──────────────────────────────────────────────────────
