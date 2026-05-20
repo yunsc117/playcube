@@ -1,0 +1,3 @@
+# Google AdSense
+# TODO: ca-pub-XXXXXXXXXXXXXXXX 를 실제 Publisher ID로 교체
+google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0

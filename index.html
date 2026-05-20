@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3×3×3 CUBE</title>
+<!-- Google AdSense: TODO — ca-pub-XXXXXXXXXXXXXXXX 를 실제 Publisher ID로 교체 -->
+<meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -187,6 +190,17 @@ canvas.can-move{cursor:pointer}
 .litem{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)}
 .ldot{width:8px;height:8px;border-radius:1px;flex-shrink:0}
 .spacer{flex:1}
+.privacy-link{
+  display:block;
+  font-size:9px;
+  color:var(--muted);
+  text-decoration:none;
+  letter-spacing:.1em;
+  text-align:center;
+  padding:4px 0 2px;
+  transition:color .15s;
+}
+.privacy-link:hover{color:var(--text)}
 
 /* ── Mobile portrait ── */
 @media (max-width:640px){
@@ -304,6 +318,7 @@ canvas.can-move{cursor:pointer}
   </div>
 
   <div class="spacer"></div>
+  <a href="privacy.html" class="privacy-link">개인정보처리방침</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
@@ -313,7 +328,7 @@ const canvas = document.getElementById('c');
 const vp     = document.getElementById('viewport');
 const scene  = new THREE.Scene();
 scene.background = new THREE.Color(0x07090d);
-scene.fog = new THREE.FogExp2(0x07090d, 0.028);
+scene.fog = new THREE.FogExp2(0x07090d, 0.012);
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -332,7 +347,7 @@ window.addEventListener('resize', resize);
 
 // ── Lighting ───────────────────────────────────────────────────────────
 // Warm key light (upper-front-right)
-const key = new THREE.DirectionalLight(0xfff5e8, 1.1);
+const key = new THREE.DirectionalLight(0xfff8f0, 1.4);
 key.position.set(4, 6, 5);
 key.castShadow = true;
 key.shadow.mapSize.set(1024, 1024);
@@ -354,7 +369,7 @@ rim.position.set(3, 1, -5);
 scene.add(rim);
 
 // Ambient
-scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
 // Ground platform
 const groundGeo = new THREE.CircleGeometry(2.8, 64);
@@ -385,12 +400,12 @@ updateCam();
 // ── Colors & materials ─────────────────────────────────────────────────
 // BoxGeometry face order: +x, -x, +y, -y, +z, -z
 const COL = {
-  R: 0xe63023, // red
-  L: 0xff8800, // orange
-  U: 0xf0f0f0, // white
-  D: 0xffd200, // yellow
-  F: 0x1ba04e, // green
-  B: 0x1b40b5, // blue
+  R: 0xe8251a, // red
+  L: 0xff8c00, // orange
+  U: 0xf5f5f5, // white
+  D: 0xffd600, // yellow
+  F: 0x16a34a, // green  (brighter)
+  B: 0x2563eb, // blue   (brighter)
   I: 0x0a0e13, // inner plastic
 };
 
@@ -407,8 +422,11 @@ const FACE_NORMALS = [
 function makeMat(color, isInner) {
   return new THREE.MeshPhongMaterial({
     color,
-    shininess: isInner ? 10 : 100,
-    specular:  isInner ? 0x050505 : 0x303030,
+    shininess:           isInner ? 8  : 110,
+    specular:            isInner ? 0x040404 : 0x282828,
+    polygonOffset:       !isInner,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits:  -1,
   });
 }
 
@@ -418,7 +436,7 @@ const BODY_GEO  = new THREE.BoxGeometry(0.915, 0.915, 0.915);
 
 // Sticker planes (inset colored quads) per colored face — creates the classic look
 const STICKER_GEO = new THREE.PlaneGeometry(0.76, 0.76);
-const STICKER_OFF = 0.459; // just past the body face
+const STICKER_OFF = 0.463; // just past the body face (0.915/2 = 0.4575)
 
 const STICKER_ROTS = [
   [0,  Math.PI/2, 0],  // +x
