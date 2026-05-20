@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — PlayCube</title>
+<meta name="description" content="PlayCube is a free, browser-based 3D Rubik's Cube game. No download required. Play on desktop or mobile.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#07090d;--panel:#0c0f15;--border:#1a2030;--text:#b8ccd8;--muted:#3d5468;--accent:#f97316}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;padding:52px 24px 80px;line-height:1.8}
+.wrap{max-width:680px;margin:0 auto}
+.back{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:.1em;margin-bottom:52px;transition:color .15s}
+.back:hover{color:var(--accent)}
+.back::before{content:'←'}
+h1{font-size:22px;font-weight:700;color:var(--accent);letter-spacing:.14em;margin-bottom:6px}
+.subtitle{font-size:11px;color:var(--muted);letter-spacing:.12em;margin-bottom:40px;display:block}
+h2{font-size:10px;font-weight:700;color:var(--text);letter-spacing:.18em;text-transform:uppercase;margin:32px 0 14px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+p{font-size:12px;color:#8aa4b8;margin-bottom:12px;line-height:1.8}
+ul{padding-left:1.4em;margin-bottom:12px}
+li{font-size:12px;color:#8aa4b8;margin-bottom:6px;line-height:1.75}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{color:var(--text);font-weight:700}
+hr{border:none;border-top:1px solid var(--border);margin:48px 0}
+.footer{font-size:10px;color:var(--muted);text-align:center}
+
+/* Feature grid */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.feat-item{background:var(--panel);border:1px solid var(--border);padding:14px 16px}
+.feat-item b{display:block;font-size:12px;color:var(--text);font-weight:700;margin-bottom:4px}
+.feat-item span{font-size:10px;color:var(--muted)}
+
+/* CTA */
+.cta{
+  display:inline-block;
+  margin-top:8px;
+  padding:12px 28px;
+  background:var(--accent);
+  color:#000;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-decoration:none;
+  transition:background .15s;
+}
+.cta:hover{background:#fbbf24;text-decoration:none}
+
+@media(max-width:480px){.feat-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="back">Back to PlayCube</a>
+
+  <h1>PLAYCUBE</h1>
+  <span class="subtitle">3&times;3&times;3 RUBIK'S CUBE &mdash; FREE BROWSER GAME</span>
+
+  <p>
+    PlayCube is a free, browser-based 3D Rubik's Cube puzzle game. Solve the classic 3&times;3&times;3 cube
+    directly in your browser — no download, no sign-up, no plugins required.
+    Built for desktop and mobile alike.
+  </p>
+
+  <a href="/" class="cta">Play Now</a>
+
+  <h2>Features</h2>
+  <div class="feat-grid">
+    <div class="feat-item">
+      <b>3D WebGL Rendering</b>
+      <span>Powered by Three.js with smooth 60 fps animation</span>
+    </div>
+    <div class="feat-item">
+      <b>Swipe to Move</b>
+      <span>Drag a face to rotate that layer — just like a real cube</span>
+    </div>
+    <div class="feat-item">
+      <b>2-Finger Orbit</b>
+      <span>Rotate the camera view with two fingers on mobile</span>
+    </div>
+    <div class="feat-item">
+      <b>Timer &amp; Move Counter</b>
+      <span>Track your solve time and number of moves</span>
+    </div>
+    <div class="feat-item">
+      <b>Scramble</b>
+      <span>One-tap randomization with 22 random moves</span>
+    </div>
+    <div class="feat-item">
+      <b>Keyboard Support</b>
+      <span>U D L R F B keys for speed-solving on desktop</span>
+    </div>
+  </div>
+
+  <h2>How to Play</h2>
+  <ul>
+    <li><strong>Swipe a face</strong> &mdash; drag your finger (or mouse) across a face to rotate that layer in the drag direction</li>
+    <li><strong>2-finger drag</strong> &mdash; pinch or drag with two fingers to rotate the camera view (mobile)</li>
+    <li><strong>Drag background</strong> &mdash; click and drag the background area to rotate the camera (desktop)</li>
+    <li><strong>Keyboard U D L R F B</strong> &mdash; clockwise moves; hold Shift for counter-clockwise</li>
+    <li><strong>Scramble</strong> &mdash; applies 22 random moves to randomize the cube</li>
+    <li><strong>Reset</strong> &mdash; returns the cube to solved state and clears the timer</li>
+  </ul>
+
+  <h2>About the Project</h2>
+  <p>
+    PlayCube is a personal project created as a fun, accessible way to play the classic Rubik's Cube puzzle online.
+    The game runs entirely in the browser using WebGL — there is no server-side processing of your gameplay data.
+  </p>
+  <p>
+    The site is free to use and supported by Google AdSense advertising.
+    No account or registration is ever required.
+  </p>
+
+  <h2>Technology</h2>
+  <ul>
+    <li><strong>Three.js</strong> &mdash; 3D WebGL rendering engine</li>
+    <li><strong>HTML5 / CSS3 / Vanilla JS</strong> &mdash; no frameworks, fast load</li>
+    <li><strong>Pointer Events API</strong> &mdash; unified mouse and touch handling</li>
+    <li>Hosted on <strong>GitHub Pages</strong> at <a href="https://playcube.site">playcube.site</a></li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>
+    For questions, feedback, or bug reports:<br>
+    Email: <a href="mailto:yunsc117@gmail.com">yunsc117@gmail.com</a>
+  </p>
+
+  <hr>
+  <p class="footer">&copy; 2026 PlayCube &nbsp;&middot;&nbsp; <a href="/privacy.html">Privacy Policy</a></p>
+</div>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
 <title>3×3×3 CUBE</title>
 <!-- Google AdSense -->
 <meta name="google-adsense-account" content="ca-pub-3908057836946420">
@@ -117,20 +117,6 @@ canvas.can-move{cursor:pointer}
 }
 #timer.running{color:var(--accent)}
 
-/* Win */
-#win-msg{
-  display:none;
-  padding:10px 0;
-  text-align:center;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.14em;
-  color:var(--green);
-  border:1px solid var(--green);
-  background:rgba(34,197,94,.06);
-  animation:pulse 1.2s ease-in-out infinite;
-}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 .sec-label{
   font-size:9px;
@@ -190,17 +176,152 @@ canvas.can-move{cursor:pointer}
 .litem{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)}
 .ldot{width:8px;height:8px;border-radius:1px;flex-shrink:0}
 .spacer{flex:1}
-.privacy-link{
-  display:block;
+
+/* Footer links */
+.footer-links{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:4px 0 2px;
+}
+.footer-btn{
+  background:none;
+  border:none;
+  font-family:'JetBrains Mono',monospace;
   font-size:9px;
   color:var(--muted);
-  text-decoration:none;
   letter-spacing:.1em;
-  text-align:center;
-  padding:4px 0 2px;
+  cursor:pointer;
+  padding:0;
   transition:color .15s;
+  -webkit-tap-highlight-color:transparent;
 }
-.privacy-link:hover{color:var(--text)}
+.footer-btn:hover{color:var(--text)}
+.footer-sep{font-size:9px;color:var(--border);pointer-events:none}
+
+/* ── Modal ── */
+#modal-backdrop{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(7,9,13,.88);
+  z-index:200;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+#modal-backdrop.open{
+  display:flex;
+  animation:mfade .18s ease;
+}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+
+#modal{
+  background:var(--panel);
+  border:1px solid var(--border);
+  max-width:640px;
+  width:100%;
+  max-height:84vh;
+  overflow-y:auto;
+  position:relative;
+  padding:40px 36px 36px;
+  animation:mslide .2s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes mslide{
+  from{transform:translateY(14px) scale(.97);opacity:0}
+  to{transform:translateY(0) scale(1);opacity:1}
+}
+#modal::-webkit-scrollbar{width:4px}
+#modal::-webkit-scrollbar-track{background:transparent}
+#modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+#modal-close{
+  position:absolute;
+  top:14px;right:16px;
+  background:none;border:none;
+  color:var(--muted);
+  font-size:20px;line-height:1;
+  cursor:pointer;
+  padding:4px 8px;
+  transition:color .15s;
+  font-family:'JetBrains Mono',monospace;
+}
+#modal-close:hover{color:var(--text)}
+
+/* Modal typography */
+#mc h1{font-size:17px;font-weight:700;color:var(--accent);letter-spacing:.12em;margin-bottom:5px}
+#mc .sub{font-size:10px;color:var(--muted);letter-spacing:.12em;margin-bottom:32px;display:block}
+#mc h2{
+  font-size:10px;font-weight:700;color:var(--text);
+  letter-spacing:.18em;text-transform:uppercase;
+  margin:28px 0 12px;padding-bottom:7px;
+  border-bottom:1px solid var(--border);
+}
+#mc p{font-size:12px;color:#8aa4b8;line-height:1.8;margin-bottom:10px}
+#mc ul{padding-left:1.3em;margin-bottom:10px}
+#mc li{font-size:12px;color:#8aa4b8;line-height:1.75;margin-bottom:5px}
+#mc a{color:var(--accent);text-decoration:none}
+#mc a:hover{text-decoration:underline}
+#mc strong{color:var(--text);font-weight:400}
+#mc hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px}
+.feat-item{
+  background:#0f1620;border:1px solid var(--border);
+  padding:10px 12px;
+}
+.feat-item b{display:block;font-size:11px;color:var(--text);font-weight:700;margin-bottom:3px}
+.feat-item span{font-size:10px;color:var(--muted)}
+
+@media(max-width:640px){
+  #modal{padding:28px 18px 24px;max-height:88vh}
+  .feat-grid{grid-template-columns:1fr 1fr}
+}
+
+/* ── Solved popup ── */
+#solved-popup{
+  display:none;
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.94);
+  background:var(--panel);
+  border:1px solid var(--green);
+  z-index:190;
+  padding:36px 44px;
+  text-align:center;
+  min-width:220px;
+  box-shadow:0 0 40px rgba(34,197,94,.15);
+}
+#solved-popup.show{
+  display:block;
+  animation:sp-in .25s cubic-bezier(.22,.68,0,1.2) forwards;
+}
+@keyframes sp-in{
+  from{opacity:0;transform:translate(-50%,-50%) scale(.88)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+#solved-popup .sp-icon{font-size:28px;color:var(--green);margin-bottom:10px}
+#solved-popup .sp-title{
+  font-size:16px;font-weight:700;
+  color:var(--green);letter-spacing:.18em;
+  margin-bottom:20px;
+}
+#solved-popup .sp-stats{
+  display:flex;gap:24px;justify-content:center;margin-bottom:24px;
+}
+#solved-popup .sp-stat{display:flex;flex-direction:column;gap:3px}
+#solved-popup .sp-val{font-size:22px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+#solved-popup .sp-label{font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+#solved-popup .sp-close{
+  background:var(--accent);border:none;
+  color:#000;font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:700;letter-spacing:.1em;
+  padding:10px 24px;cursor:pointer;
+  transition:background .15s;width:100%;
+}
+#solved-popup .sp-close:hover{background:var(--accent2)}
 
 /* ── Mobile portrait ── */
 @media (max-width:640px){
@@ -225,7 +346,6 @@ canvas.can-move{cursor:pointer}
   .stat{flex-direction:column;align-items:flex-end;padding:0;border-bottom:none}
   .stat-label{font-size:8px}
   .stat-value{font-size:18px}
-  #win-msg{padding:6px 0;font-size:10px}
   .btn{padding:13px 0;font-size:14px;min-height:46px}
   .move-grid{gap:4px}
   .action-wrap{flex-direction:row}
@@ -268,8 +388,6 @@ canvas.can-move{cursor:pointer}
       </div>
     </div>
   </div>
-
-  <div id="win-msg">&#10003; SOLVED!</div>
 
   <div>
     <div class="sec-label">Moves</div>
@@ -318,8 +436,125 @@ canvas.can-move{cursor:pointer}
   </div>
 
   <div class="spacer"></div>
-  <a href="privacy.html" class="privacy-link">개인정보처리방침</a>
+  <div class="footer-links">
+    <button class="footer-btn" data-modal="about">About</button>
+    <span class="footer-sep">·</span>
+    <button class="footer-btn" data-modal="privacy">Privacy Policy</button>
+  </div>
 </div>
+
+<!-- Solved popup -->
+<div id="solved-popup">
+  <div class="sp-icon">✓</div>
+  <div class="sp-title">SOLVED!</div>
+  <div class="sp-stats">
+    <div class="sp-stat">
+      <div class="sp-val" id="sp-time">—</div>
+      <div class="sp-label">Time</div>
+    </div>
+    <div class="sp-stat">
+      <div class="sp-val" id="sp-moves">—</div>
+      <div class="sp-label">Moves</div>
+    </div>
+  </div>
+  <button class="sp-close" id="sp-close">PLAY AGAIN</button>
+</div>
+
+<!-- Modal backdrop -->
+<div id="modal-backdrop">
+  <div id="modal">
+    <button id="modal-close">&#215;</button>
+    <div id="mc"></div>
+  </div>
+</div>
+
+<!-- About content template -->
+<template id="tpl-about">
+  <h1>PLAYCUBE</h1>
+  <span class="sub">3&times;3&times;3 RUBIK'S CUBE &mdash; FREE BROWSER GAME</span>
+  <p>PlayCube is a free, browser-based 3D Rubik's Cube puzzle game built for desktop and mobile. No download, no sign-up &mdash; just open and solve.</p>
+  <h2>Features</h2>
+  <div class="feat-grid">
+    <div class="feat-item"><b>3D Rendering</b><span>Three.js WebGL</span></div>
+    <div class="feat-item"><b>Swipe to Move</b><span>Face-swipe interaction</span></div>
+    <div class="feat-item"><b>2-Finger Orbit</b><span>Rotate view on mobile</span></div>
+    <div class="feat-item"><b>Timer &amp; Counter</b><span>Track your solve</span></div>
+  </div>
+  <h2>How to Play</h2>
+  <ul>
+    <li><strong>Swipe a face</strong> &mdash; drag across a face to rotate that layer</li>
+    <li><strong>2-finger drag</strong> &mdash; rotate the camera view (mobile)</li>
+    <li><strong>Drag background</strong> &mdash; rotate the camera view (desktop)</li>
+    <li><strong>Keyboard</strong> &mdash; U D L R F B (clockwise), Shift + key (counter-clockwise)</li>
+    <li><strong>Scramble</strong> &mdash; randomizes the cube with 22 moves</li>
+  </ul>
+  <h2>About This Site</h2>
+  <p>PlayCube is a personal project available at <a href="https://playcube.site" target="_blank" rel="noopener">playcube.site</a>. The site is free to use and supported by Google AdSense advertising.</p>
+  <p>For questions or feedback: <a href="mailto:yunsc117@gmail.com">yunsc117@gmail.com</a></p>
+  <hr>
+  <p style="font-size:10px;color:var(--muted);text-align:center">&copy; 2026 PlayCube</p>
+</template>
+
+<!-- Privacy Policy content template -->
+<template id="tpl-privacy">
+  <h1>PRIVACY POLICY</h1>
+  <span class="sub">Last updated: May 20, 2026</span>
+  <p>This Privacy Policy describes how PlayCube (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), operated at <a href="https://playcube.site" target="_blank" rel="noopener">playcube.site</a>, collects, uses, and shares information about you when you use our service.</p>
+
+  <h2>1. Information We Collect</h2>
+  <p>PlayCube does not require registration or login and does not directly collect personally identifiable information. However, third-party services integrated into this site may automatically collect the following:</p>
+  <ul>
+    <li>IP address and approximate geographic location</li>
+    <li>Browser type, version, and operating system</li>
+    <li>Device type and screen resolution</li>
+    <li>Pages visited, time spent, and referral source</li>
+    <li>Information collected via cookies and similar tracking technologies</li>
+  </ul>
+
+  <h2>2. Google AdSense &amp; Cookies</h2>
+  <p>We use Google AdSense to display advertisements. Google uses cookies to serve ads based on your prior visits to this and other websites. These cookies allow Google and its partners to serve ads tailored to your interests.</p>
+  <ul>
+    <li>Google&rsquo;s use of advertising cookies is governed by the <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google Advertising Policy</a>.</li>
+    <li>You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ad Settings</a>.</li>
+    <li>You can also opt out via the <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">Digital Advertising Alliance</a> opt-out tool.</li>
+  </ul>
+  <p>By using this site, you consent to the processing of data about you by Google in the manner and for the purposes set out above.</p>
+
+  <h2>3. How We Use Information</h2>
+  <ul>
+    <li>To serve and improve the game experience</li>
+    <li>To display relevant advertisements via Google AdSense</li>
+    <li>To analyze site traffic and usage patterns</li>
+  </ul>
+
+  <h2>4. Third-Party Services</h2>
+  <p>We share data with the following third parties solely to operate the service:</p>
+  <ul>
+    <li><strong>Google LLC</strong> &mdash; advertising and analytics (<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>)</li>
+  </ul>
+  <p>We do not sell, rent, or share your information with any other third parties for their marketing purposes.</p>
+
+  <h2>5. Children&rsquo;s Privacy</h2>
+  <p>PlayCube is not directed at children under the age of 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, please contact us immediately.</p>
+
+  <h2>6. Your Rights</h2>
+  <p>Depending on your location, you may have the right to:</p>
+  <ul>
+    <li>Access, correct, or delete personal data we hold about you</li>
+    <li>Object to or restrict how your data is processed</li>
+    <li>Opt out of personalized advertising at any time</li>
+    <li>Lodge a complaint with your local data protection authority</li>
+  </ul>
+
+  <h2>7. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. The &ldquo;Last updated&rdquo; date at the top of this page reflects when the policy was last revised. Continued use of the site after changes constitutes acceptance of the updated policy.</p>
+
+  <h2>8. Contact Us</h2>
+  <p>For privacy-related inquiries, please contact:<br>
+  Email: <a href="mailto:yunsc117@gmail.com">yunsc117@gmail.com</a></p>
+  <hr>
+  <p style="font-size:10px;color:var(--muted);text-align:center">&copy; 2026 PlayCube &nbsp;&middot;&nbsp; <a href="https://playcube.site">playcube.site</a></p>
+</template>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
@@ -784,8 +1019,14 @@ function checkWin() {
   }
   gameOver = true;
   stopTimer();
-  document.getElementById('win-msg').style.display = 'block';
   document.getElementById('timer').classList.remove('running');
+  // Show solved popup with final stats
+  const elapsed = timerStart ? Math.floor((Date.now() - timerStart) / 1000) : 0;
+  const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const ss = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('sp-time').textContent  = `${mm}:${ss}`;
+  document.getElementById('sp-moves').textContent = moveCount;
+  document.getElementById('solved-popup').classList.add('show');
 }
 
 // ── Timer ──────────────────────────────────────────────────────────────
@@ -823,7 +1064,7 @@ function scramble() {
   }
   scrambling = false;
   gameOver   = false;
-  document.getElementById('win-msg').style.display = 'none';
+  document.getElementById('solved-popup').classList.remove('show');
 }
 
 function reset() {
@@ -835,7 +1076,7 @@ function reset() {
   document.getElementById('moves').textContent  = '0';
   document.getElementById('timer').textContent  = '00:00';
   document.getElementById('timer').classList.remove('running');
-  document.getElementById('win-msg').style.display = 'none';
+  document.getElementById('solved-popup').classList.remove('show');
   buildCube();
 }
 
@@ -855,6 +1096,38 @@ document.addEventListener('keydown', e => {
     queueMove(e.shiftKey ? key + "'" : key);
   }
 });
+
+// ── Solved popup ───────────────────────────────────────────────────────
+document.getElementById('sp-close').addEventListener('click', () => {
+  document.getElementById('solved-popup').classList.remove('show');
+  reset();
+});
+
+// ── Modal ──────────────────────────────────────────────────────────────
+const backdrop = document.getElementById('modal-backdrop');
+const modalEl  = document.getElementById('modal');
+const mc       = document.getElementById('mc');
+
+function openModal(name) {
+  const tpl = document.getElementById(`tpl-${name}`);
+  if (!tpl) return;
+  mc.innerHTML = '';
+  mc.appendChild(tpl.content.cloneNode(true));
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  backdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('[data-modal]').forEach(btn => {
+  btn.addEventListener('click', () => openModal(btn.dataset.modal));
+});
+document.getElementById('modal-close').addEventListener('click', closeModal);
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 // ── Render loop ────────────────────────────────────────────────────────
 (function loop() {
