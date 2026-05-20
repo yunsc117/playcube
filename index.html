@@ -19,13 +19,13 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#07090d;
-  --panel:#0c0f15;
-  --border:#1a2030;
-  --text:#b8ccd8;
-  --muted:#3d5468;
+  --bg:#080c12;
+  --panel:#0d1118;
+  --border:#1e2840;
+  --text:#c4d4e0;
+  --muted:#445f75;
   --accent:#f97316;
-  --accent2:#fbbf24;
+  --accent2:#fb923c;
   --green:#22c55e;
 }
 body{
@@ -50,7 +50,7 @@ body{
   content:'';
   position:absolute;
   inset:0;
-  background:radial-gradient(ellipse at center, transparent 55%, rgba(7,9,13,.65) 100%);
+  background:radial-gradient(ellipse at center, transparent 55%, rgba(8,12,18,.65) 100%);
   pointer-events:none;
 }
 canvas{
@@ -79,13 +79,13 @@ canvas.can-move{cursor:pointer}
 
 /* ── Sidebar ── */
 #sidebar{
-  width:218px;
+  width:248px;
   background:var(--panel);
   border-left:1px solid var(--border);
   display:flex;
   flex-direction:column;
-  padding:22px 14px;
-  gap:20px;
+  padding:24px 18px;
+  gap:22px;
   overflow-y:auto;
   overflow-x:hidden;
   flex-shrink:0;
@@ -93,76 +93,99 @@ canvas.can-move{cursor:pointer}
 #sidebar-header{
   display:flex;
   flex-direction:column;
-  gap:20px;
+  gap:18px;
 }
 .logo{
-  font-size:15px;
-  font-weight:700;
-  color:var(--accent);
-  letter-spacing:.14em;
   display:flex;
-  align-items:center;
-  gap:8px;
-  white-space:nowrap;
+  flex-direction:column;
+  gap:3px;
 }
-.logo-sub{color:var(--muted);font-weight:300;font-size:11px;letter-spacing:.1em}
-.stats{display:flex;flex-direction:column}
+.logo-main{
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:.08em;
+  line-height:1;
+}
+.logo-play{color:var(--accent)}
+.logo-cube{color:var(--text)}
+.logo-tag{font-size:9px;color:var(--muted);letter-spacing:.2em;font-weight:400}
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+}
 .stat{
   display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-  padding:7px 0;
-  border-bottom:1px solid var(--border);
+  flex-direction:column;
+  gap:3px;
+  padding:10px 12px;
+  background:var(--panel);
 }
-.stat-label{font-size:9px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase}
+.stat:first-child{border-right:none}
+.stat-label{font-size:8px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
 .stat-value{
-  font-size:24px;
+  font-size:26px;
   font-weight:700;
   color:var(--text);
   font-variant-numeric:tabular-nums;
-  letter-spacing:-.02em;
+  letter-spacing:-.03em;
+  line-height:1;
   transition:color .3s;
 }
 #timer.running{color:var(--accent)}
 
-
 .sec-label{
-  font-size:9px;
+  font-size:8px;
   color:var(--muted);
-  letter-spacing:.18em;
+  letter-spacing:.2em;
   text-transform:uppercase;
-  margin-bottom:8px;
+  margin-bottom:9px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--border);
 }
 
 /* Move grid */
 .move-grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:3px;
+  gap:4px;
 }
 .btn{
-  background:#111720;
+  background:#111820;
   border:1px solid var(--border);
+  border-radius:3px;
   color:var(--text);
   font-family:'JetBrains Mono',monospace;
-  font-size:11px;
+  font-size:12px;
   font-weight:700;
-  padding:8px 0;
+  padding:9px 0;
   cursor:pointer;
-  transition:background .1s,color .08s,border-color .1s;
+  transition:background .1s,color .08s,border-color .1s,box-shadow .1s;
   letter-spacing:.04em;
   -webkit-tap-highlight-color:transparent;
 }
-.btn:hover{background:var(--accent);border-color:var(--accent);color:#000}
-.btn:active{background:var(--accent2);border-color:var(--accent2);color:#000;transform:scale(.92)}
+.btn:hover{background:#1a2235;border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.btn:active{background:var(--accent);border-color:var(--accent);color:#000;transform:scale(.92)}
+/* Face color top-border coding */
+.btn[data-m="U"],.btn[data-m="U'"]{border-top:2px solid #f5f5f5}
+.btn[data-m="D"],.btn[data-m="D'"]{border-top:2px solid #ffd600}
+.btn[data-m="L"],.btn[data-m="L'"]{border-top:2px solid #ff8c00}
+.btn[data-m="R"],.btn[data-m="R'"]{border-top:2px solid #e8251a}
+.btn[data-m="F"],.btn[data-m="F'"]{border-top:2px solid #16a34a}
+.btn[data-m="B"],.btn[data-m="B'"]{border-top:2px solid #2563eb}
 
 /* Action buttons */
 .action-wrap{display:flex;flex-direction:column;gap:6px}
 .abtn{
   width:100%;
-  padding:11px;
+  padding:12px 0;
   background:transparent;
   border:1px solid var(--border);
+  border-radius:4px;
   color:var(--text);
   font-family:'JetBrains Mono',monospace;
   font-size:11px;
@@ -172,17 +195,20 @@ canvas.can-move{cursor:pointer}
   transition:all .15s;
   -webkit-tap-highlight-color:transparent;
 }
-.abtn:hover{border-color:var(--accent);color:var(--accent)}
-.abtn.primary{background:var(--accent);border-color:var(--accent);color:#000}
-.abtn.primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.abtn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.abtn.primary{background:var(--accent);border-color:var(--accent);color:#000;box-shadow:0 2px 14px rgba(249,115,22,.3)}
+.abtn.primary:hover{background:var(--accent2);border-color:var(--accent2);box-shadow:0 2px 18px rgba(251,146,60,.4)}
 .abtn:active{transform:scale(.97)}
 
 /* Hint / legend */
-.hint{font-size:9px;color:var(--muted);line-height:2.1}
-.hint b{color:var(--text);font-weight:400}
-.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.litem{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)}
-.ldot{width:8px;height:8px;border-radius:1px;flex-shrink:0}
+.hint{font-size:9px;color:var(--muted);line-height:1.9}
+.hint b{color:var(--accent);font-weight:700}
+.legend{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}
+.litem{display:flex;align-items:center;gap:7px;font-size:9px;color:var(--muted)}
+.litem-label{display:flex;flex-direction:column;gap:1px}
+.litem-face{font-weight:700;color:var(--text);font-size:10px}
+.litem-dir{font-size:8px;color:var(--muted)}
+.ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .spacer{flex:1}
 
 /* Footer links */
@@ -230,6 +256,7 @@ canvas.can-move{cursor:pointer}
 #modal{
   background:var(--panel);
   border:1px solid var(--border);
+  border-radius:8px;
   max-width:640px;
   width:100%;
   max-height:84vh;
@@ -248,16 +275,17 @@ canvas.can-move{cursor:pointer}
 
 #modal-close{
   position:absolute;
-  top:14px;right:16px;
+  top:12px;right:14px;
   background:none;border:none;
   color:var(--muted);
   font-size:20px;line-height:1;
   cursor:pointer;
-  padding:4px 8px;
-  transition:color .15s;
+  padding:6px 10px;
+  border-radius:4px;
+  transition:color .15s,background .15s;
   font-family:'JetBrains Mono',monospace;
 }
-#modal-close:hover{color:var(--text)}
+#modal-close:hover{color:var(--accent);background:rgba(249,115,22,.08)}
 
 /* Modal typography */
 #mc h1{font-size:17px;font-weight:700;color:var(--accent);letter-spacing:.12em;margin-bottom:5px}
@@ -295,41 +323,56 @@ canvas.can-move{cursor:pointer}
   top:50%;left:50%;
   transform:translate(-50%,-50%) scale(.94);
   background:var(--panel);
-  border:1px solid var(--green);
+  border:1px solid var(--border);
+  border-top:2px solid var(--accent);
+  border-radius:8px;
   z-index:190;
-  padding:36px 44px;
+  padding:32px 40px 28px;
   text-align:center;
-  min-width:220px;
-  box-shadow:0 0 40px rgba(34,197,94,.15);
+  min-width:240px;
+  box-shadow:0 0 40px rgba(249,115,22,.12),0 24px 64px rgba(0,0,0,.85);
 }
 #solved-popup.show{
   display:block;
-  animation:sp-in .25s cubic-bezier(.22,.68,0,1.2) forwards;
+  animation:sp-in .28s cubic-bezier(.22,.68,0,1.2) forwards;
 }
 @keyframes sp-in{
-  from{opacity:0;transform:translate(-50%,-50%) scale(.88)}
+  from{opacity:0;transform:translate(-50%,-50%) scale(.85)}
   to{opacity:1;transform:translate(-50%,-50%) scale(1)}
 }
-#solved-popup .sp-icon{font-size:28px;color:var(--green);margin-bottom:10px}
+#solved-popup .sp-icon{
+  width:52px;height:52px;border-radius:50%;
+  background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:var(--accent);
+  margin:0 auto 14px;
+}
 #solved-popup .sp-title{
-  font-size:16px;font-weight:700;
-  color:var(--green);letter-spacing:.18em;
+  font-size:14px;font-weight:700;
+  color:var(--text);letter-spacing:.22em;
   margin-bottom:20px;
 }
 #solved-popup .sp-stats{
-  display:flex;gap:24px;justify-content:center;margin-bottom:24px;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:6px;
+  overflow:hidden;margin-bottom:20px;
 }
-#solved-popup .sp-stat{display:flex;flex-direction:column;gap:3px}
-#solved-popup .sp-val{font-size:22px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
-#solved-popup .sp-label{font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+#solved-popup .sp-stat{
+  display:flex;flex-direction:column;gap:3px;
+  padding:10px 12px;background:var(--panel);
+}
+#solved-popup .sp-val{font-size:24px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+#solved-popup .sp-label{font-size:8px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase}
 #solved-popup .sp-close{
-  background:var(--accent);border:none;
+  background:var(--accent);border:none;border-radius:4px;
   color:#000;font-family:'JetBrains Mono',monospace;
-  font-size:11px;font-weight:700;letter-spacing:.1em;
-  padding:10px 24px;cursor:pointer;
-  transition:background .15s;width:100%;
+  font-size:11px;font-weight:700;letter-spacing:.12em;
+  padding:12px 0;cursor:pointer;
+  transition:background .15s,box-shadow .15s;width:100%;
+  box-shadow:0 2px 10px rgba(249,115,22,.3);
 }
-#solved-popup .sp-close:hover{background:var(--accent2)}
+#solved-popup .sp-close:hover{background:var(--accent2);box-shadow:0 2px 14px rgba(251,146,60,.4)}
 
 /* ── Mobile portrait ── */
 @media (max-width:640px){
@@ -348,12 +391,12 @@ canvas.can-move{cursor:pointer}
     justify-content:space-between;
     gap:8px;
   }
-  .logo{font-size:12px;letter-spacing:.1em}
-  .logo-sub{display:none}
-  .stats{flex-direction:row;gap:14px}
-  .stat{flex-direction:column;align-items:flex-end;padding:0;border-bottom:none}
+  .logo-main{font-size:13px}
+  .logo-tag{display:none}
+  .stats{display:flex;flex-direction:row;gap:0;background:transparent;border:none;border-radius:0}
+  .stat{flex-direction:column;align-items:flex-end;padding:0;background:transparent;border:none}
   .stat-label{font-size:8px}
-  .stat-value{font-size:18px}
+  .stat-value{font-size:20px}
   .btn{padding:13px 0;font-size:14px;min-height:46px}
   .move-grid{gap:4px}
   .action-wrap{flex-direction:row}
@@ -384,7 +427,10 @@ canvas.can-move{cursor:pointer}
 
 <div id="sidebar">
   <div id="sidebar-header">
-    <div class="logo">3×3×3 <span class="logo-sub">CUBE</span></div>
+    <div class="logo">
+      <div class="logo-main"><span class="logo-play">PLAY</span><span class="logo-cube">CUBE</span></div>
+      <div class="logo-tag">3&times;3&times;3 RUBIK&rsquo;S CUBE</div>
+    </div>
     <div class="stats">
       <div class="stat">
         <span class="stat-label">TIME</span>
@@ -421,14 +467,14 @@ canvas.can-move{cursor:pointer}
   </div>
 
   <div class="desktop-only">
-    <div class="sec-label">Face colors</div>
+    <div class="sec-label">Face guide</div>
     <div class="legend">
-      <div class="litem"><div class="ldot" style="background:#f0f0f0"></div>U</div>
-      <div class="litem"><div class="ldot" style="background:#ffd200"></div>D</div>
-      <div class="litem"><div class="ldot" style="background:#ff8800"></div>L</div>
-      <div class="litem"><div class="ldot" style="background:#e63023"></div>R</div>
-      <div class="litem"><div class="ldot" style="background:#1ba04e"></div>F</div>
-      <div class="litem"><div class="ldot" style="background:#1b40b5"></div>B</div>
+      <div class="litem"><div class="ldot" style="background:#f5f5f5"></div><div class="litem-label"><span class="litem-face">U</span><span class="litem-dir">Top</span></div></div>
+      <div class="litem"><div class="ldot" style="background:#ffd600"></div><div class="litem-label"><span class="litem-face">D</span><span class="litem-dir">Bottom</span></div></div>
+      <div class="litem"><div class="ldot" style="background:#ff8c00"></div><div class="litem-label"><span class="litem-face">L</span><span class="litem-dir">Left</span></div></div>
+      <div class="litem"><div class="ldot" style="background:#e8251a"></div><div class="litem-label"><span class="litem-face">R</span><span class="litem-dir">Right</span></div></div>
+      <div class="litem"><div class="ldot" style="background:#16a34a"></div><div class="litem-label"><span class="litem-face">F</span><span class="litem-dir">Front</span></div></div>
+      <div class="litem"><div class="ldot" style="background:#2563eb"></div><div class="litem-label"><span class="litem-face">B</span><span class="litem-dir">Back</span></div></div>
     </div>
   </div>
 
@@ -439,7 +485,8 @@ canvas.can-move{cursor:pointer}
       <b>2-finger drag</b> — rotate view<br>
       <b>Drag space</b> — rotate view<br>
       <b>U D L R F B</b> — clockwise<br>
-      <b>Shift</b> + key — counter-CW
+      <b>Shift</b> + key — counter-CW<br>
+      Prime (&#x27;) = counter-clockwise
     </div>
   </div>
 
@@ -453,7 +500,7 @@ canvas.can-move{cursor:pointer}
 
 <!-- Solved popup -->
 <div id="solved-popup">
-  <div class="sp-icon">✓</div>
+  <div class="sp-icon"><span>✓</span></div>
   <div class="sp-title">SOLVED!</div>
   <div class="sp-stats">
     <div class="sp-stat">
@@ -570,8 +617,8 @@ canvas.can-move{cursor:pointer}
 const canvas = document.getElementById('c');
 const vp     = document.getElementById('viewport');
 const scene  = new THREE.Scene();
-scene.background = new THREE.Color(0x07090d);
-scene.fog = new THREE.FogExp2(0x07090d, 0.012);
+scene.background = new THREE.Color(0x080c12);
+scene.fog = new THREE.FogExp2(0x080c12, 0.012);
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -628,7 +675,7 @@ ground.receiveShadow = true;
 scene.add(ground);
 
 // ── Camera orbit ───────────────────────────────────────────────────────
-let theta = 0.65, phi = 1.08, CAM_R = 6.8;
+let theta = 0.65, phi = 1.08, CAM_R = 9.0;
 
 function updateCam() {
   camera.position.set(
